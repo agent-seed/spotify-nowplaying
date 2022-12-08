@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Now playing</title>
+</head>
+<body onload="timer()">
+    <div class="background">
+    <div class="main">
+    <center>
+        <div id="art"></div>
+        <h1 id="title">Nothing playing</h1>
+        <h2 id="artist">Try reloading</h2>
+        <!-- <span class="material-symbols-outlined" onclick="play()">
+            play_arrow
+            </span> -->
+            <!-- <input class="toggle" type="checkbox" id="checkbox" onclick="changeTheme()"/> -->
+        <div id="hoverbox"><p>Hide cursor</p></div>
+        <div id="icon-wrapper">
+        <span class="material-symbols-outlined" class="noselect" id="fullscreen" onclick="fullscreen()">fullscreen</span>
+        <span class="material-symbols-outlined" class="noselect" id="theme" onclick="changeTheme()">mode_night</span>
+        </div>
+    </center>
+    </div>
+    </div>
+</body>
+</html>
+<style>
+    @import url('https://fonts.cdnfonts.com/css/gotham-rounded');
+    @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&display=swap');
+    html {
+        background: black;
+        border: 0px;
+        margin: 0px;
+        padding: 0px;
+    }
+    body {
+        border: 0px;
+        margin: 0px;
+        padding: 0px;
+    }
+    :root {
+        --art: url(https://cdn.agentseed.net/nothing-playing.png);
+        --placeholder: url(https://agentseed.org/placeholder.png);
+        --debug: unset;
+        --back: var(--art);
+    }
+    .background {
+        height: 900px;
+        background: var(--back);
+        background-size: cover;
+        background-repeat: repeat;
+        border-radius: 10px;
+        position: fixed;
+        width: 99%;
+    }
+    .main {
+        backdrop-filter: blur(100px);
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        text-align: center;
+        position: fixed;
+    }
+    #title {
+        padding-top: 20px;
+    }
+    #title, #artist {
+        font-family: 'Gotham Rounded', sans-serif;
+        color: white;
+    }
+    #art {
+        margin-top: 40px;
+        background: var(--art);
+        max-width: 50%;
+        max-height: 500px;
+        background-size: cover;
+        background-repeat: no-repeat;
+        aspect-ratio: 1 / 1;
+        border-radius: 20px;
+    }
+    * {
+        border: var(--debug);
+    }
+    #hoverbox {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        cursor: none;
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        filter: opacity(0%);
+    }
+    .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 48;
+        color: white;
+        font-size: 25pt;
+        cursor: pointer;
+    }
+    .material-symbols-outlined:hover {
+        color: gray;
+    }
+    #icon-wrapper {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+    }
+    .noselect {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        }
+    ::selection {
+        background-color: transparent;
+    }
+</style>
+<script src="https://sdk.scdn.co/spotify-player.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+var isFullScreen = false;
+function timer() {
+timer = setInterval(function() {nowPlaying();}, 100);
+timer = setInterval(function() {setFullscreenIcon();}, 100);
+}
+function nowPlaying() {
+var code1 = window.location.href.replace('https://agentseed.org/nowplaying/#access_token=', '');
+var code = code1.replace('&token_type=Bearer&expires_in=3600', '');
+var token = code; //! remember to set this to code
+$.ajax({
+  type: "GET",
+  url: "https://api.spotify.com/v1/me/player/currently-playing",
+  headers: {
+    'Authorization' : 'Bearer ' + token
+  },
+  success: function(data) {
+    var artwork = data.item.album.images[1].url;
+    var trackName = data.item.name;
+    var artistName = data.item.artists[0].name;
+
+    var track = document.getElementById('title');
+    var artist = document.getElementById('artist');
+
+    track.textContent = trackName;
+    artist.textContent = artistName;
+    let root = document.documentElement;
+    root.style.setProperty('--art', 'url(' + artwork + ')');
+
+  },
+  dataType: "json"
+});
+}
+function fullscreen() {
+    let fullscreen = document.documentElement;
+    if (!document.fullscreenElement) {
+        fullscreen?.requestFullscreen();
+    } else {
+        document.exitFullscreen();
+    }
+    if (window.innerHeight == screen.height) {
+        isFullScreen = 'true';
+    } else {
+        isFullScreen = 'false';
+    }
+    setFullscreenIcon();
+}
+function setFullscreenIcon() {
+    if(isFullScreen == 'false') {
+        document.getElementById('fullscreen').textContent = 'fullscreen_exit';
+    } else {
+        document.getElementById('fullscreen').textContent = 'fullscreen';
+    }
+}
+function changeTheme() {
+    const theme = document.getElementById('theme');
+    if(theme.textContent == 'mode_night') {
+        document.documentElement.style.setProperty('--back', '#000');
+        theme.textContent = 'light_mode'
+    } else {
+        document.documentElement.style.setProperty('--back', 'var(--art)');
+        theme.textContent = 'mode_night'
+    }
+}
+</script>
